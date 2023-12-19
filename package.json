@@ -12,7 +12,7 @@
     "type": "module",
     "scripts": {
         "lint:check": "eslint src",
-        "lint:check-ci": "eslint --cache --cache-strategy content --cache-location .cache/ --exit-on-fatal-error --format @annangela/eslint-formatter-gha --max-warnings 0 ./src",
+        "lint:check-ci": "eslint --cache --cache-strategy content --cache-location .cache/ --exit-on-fatal-error --max-warnings 0 ./src",
         "__disabled:lint:check-ci": "eslint --cache --cache-strategy content --cache-location .cache/ --exit-on-fatal-error --format @annangela/eslint-formatter-gha --max-warnings 0 ./src",
         "lint:write": "eslint --fix src",
         "lint:eslint.config.flat": "eslint eslint.config.js",
