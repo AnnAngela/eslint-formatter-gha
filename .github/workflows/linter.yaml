@@ -5,6 +5,7 @@ on:
     paths:
       - src/**/*
       - .*.yaml
+      - .github/workflows/linter.yaml
       - package.json
       - package-lock.json
   merge_group:
@@ -12,6 +13,7 @@ on:
     paths:
         - src/**/*
         - .*.yaml
+        - .github/workflows/linter.yaml
         - package.json
         - package-lock.json
   workflow_dispatch:
