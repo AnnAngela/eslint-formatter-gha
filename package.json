@@ -2,15 +2,23 @@
     "name": "@annangela/eslint-formatter-gha",
     "version": "1.0.0",
     "description": "A better ESLint formatter used in GitHub Actions",
-    "main": "./dist/index.js",
+    "main": "./dist/index.cjs",
     "exports": {
-        ".": "./dist/index.js"
+        ".": "./dist/index.cjs"
     },
     "files": [
         "dist"
     ],
+    "type": "module",
     "scripts": {
-        "lint": "eslint src",
+        "lint:check": "eslint src",
+        "lint:check-ci": "eslint --cache --cache-strategy content --cache-location .cache/ --exit-on-fatal-error --format @annangela/eslint-formatter-gha --max-warnings 0 ./src",
+        "lint:write": "eslint --fix src",
+        "lint:eslint.config.flat": "eslint eslint.config.js",
+        "__disabled:package:production": "esbuild src/index.ts --bundle --format=cjs --platform=node --legal-comments=inline --outdir=dist --out-extension:.js=.cjs --target=node18 --minify --tree-shaking=true --analyze --log-limit=0",
+        "__disabled:package:development": "esbuild src/index.ts --bundle --format=cjs --platform=node --legal-comments=inline --outdir=dist --out-extension:.js=.cjs --target=node18 --tree-shaking=true --analyze=verbose --log-limit=0",
+        "package:production": "tsc --build --verbose && cp dist/index.js dist/index.cjs",
+        "package:development": "tsc --build --verbose && cp dist/index.js dist/index.cjs",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "engines": {
@@ -32,13 +40,17 @@
     },
     "homepage": "https://github.com/AnnAngela/eslint-formatter-gha#readme",
     "devDependencies": {
+        "@annangela/eslint-formatter-gha": "^0.0.1",
         "@annangela/eslint-plugin-prefer-reflect": "^2.1.0",
+        "@eslint/js": "^8.56.0",
         "@stylistic/eslint-plugin": "^1.5.1",
         "@stylistic/eslint-plugin-migrate": "^1.5.1",
         "@types/eslint": "^8.44.9",
         "@types/node": "^18.19.3",
+        "@typescript-eslint/eslint-plugin": "^6.15.0",
+        "@typescript-eslint/parser": "^6.15.0",
+        "esbuild": "^0.19.10",
         "eslint": "^8.56.0",
-        "eslint-plugin-github": "^4.10.1",
         "eslint-plugin-node": "^11.1.0",
         "eslint-plugin-prefer-arrow-functions": "^3.2.4",
         "typescript": "^5.3.3"

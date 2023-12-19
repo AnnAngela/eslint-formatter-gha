@@ -1,8 +1,7 @@
-"use strict";
-const isInGithubActions = process.env.GITHUB_ACTIONS === "true";
 import path from "path";
 import type { ESLint } from "eslint";
 import { debug, notice, warning, error } from "@actions/core";
+const isInGithubActions = process.env.GITHUB_ACTIONS === "true";
 const deprecatedRules: string[] = [];
 const formatter: ESLint.Formatter["format"] = (results) => {
     if (results.length === 0) {
@@ -10,7 +9,7 @@ const formatter: ESLint.Formatter["format"] = (results) => {
     }
     for (const {
         filePath, messages, usedDeprecatedRules,
-        // eslint-disable-next-line no-unused-vars
+        // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
         suppressedMessages, errorCount, fatalErrorCount, warningCount, fixableErrorCount, fixableWarningCount, output, source,
     } of results) {
         const baseAnnotationProperties = {
@@ -27,10 +26,10 @@ const formatter: ESLint.Formatter["format"] = (results) => {
         }
         for (const {
             message, severity, line, column, endLine, endColumn, ruleId, fix,
-            // eslint-disable-next-line no-unused-vars
+            // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars, no-shadow
             messageId, nodeType, fatal, source, suggestions,
         } of messages) {
-            const msg = `${message} (${ruleId}) ${fix ? "[maybe fixable]" : ""} - https://eslint.org/docs/latest/rules/${ruleId}${isInGithubActions ? ` @ https://github.com/${process.env.GITHUB_REPOSITORY}/blob/${(process.env.GITHUB_SHAs as string).slice(0, 7)}/${path.relative(process.cwd(), filePath)}#L${line}${line !== endLine ? `-L${endLine}` : ""}` : ""}`;
+            const msg = `${message} (${ruleId}) ${fix ? "[maybe fixable]" : ""} - https://eslint.org/docs/latest/rules/${ruleId}${isInGithubActions ? ` @ https://github.com/${process.env.GITHUB_REPOSITORY}/blob/${process.env.GITHUB_SHAs?.slice(0, 7)}/${path.relative(process.cwd(), filePath)}#L${line}${line !== endLine ? `-L${endLine}` : ""}` : ""}`;
             /**
              * @type {NonNullable<Parameters<notice>[1]>}
              */
@@ -59,4 +58,4 @@ const formatter: ESLint.Formatter["format"] = (results) => {
     }
     return "";
 };
-module.exports = formatter;
+export default formatter;
