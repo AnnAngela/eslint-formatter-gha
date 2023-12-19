@@ -1,26 +1,35 @@
 env:
   node: true
-  es2024: true
+  es2023: true # Node 18
 
 root: true
 
 reportUnusedDisableDirectives: true
 
 parserOptions:
-  ecmaVersion: latest
+  ecmaVersion: 2022 # Node 18
+  project: tsconfig.json
+  lib: 2023 # Node 18
 
 extends:
   - eslint:recommended
   - plugin:node/recommended
   - plugin:github/recommended
+  - plugin:@typescript-eslint/strict-type-checked
+  - plugin:@typescript-eslint/stylistic-type-checked
+  - plugin:@stylistic/recommended-extends
 
 ignorePatterns:
   - dist/
+
+parser: "@typescript-eslint/parser"
 
 plugins:
   - "@annangela/prefer-reflect"
   - prefer-arrow-functions
   - "@stylistic"
+  - "@stylistic/migrate"
+  - "@typescript-eslint"
 
 rules:
   "@annangela/prefer-reflect/prefer-reflect": error
@@ -48,9 +57,6 @@ rules:
   linebreak-style:
     - 0
     - windows
-  semi:
-    - error
-    - always
   no-console:
     - 0
   no-unused-vars:
@@ -116,7 +122,7 @@ rules:
     - error
   "@typescript-eslint/explicit-member-accessibility":
     - error
-  "@typescript-eslint/func-call-spacing":
+  "@stylistic/function-call-spacing":
     - error
     - never
   "@typescript-eslint/no-array-constructor": error
@@ -127,23 +133,22 @@ rules:
   "@typescript-eslint/no-inferrable-types": error
   "@typescript-eslint/no-misused-new": error
   "@typescript-eslint/no-namespace": error
-  "@typescript-eslint/no-non-null-assertion": warn
+  "@typescript-eslint/no-non-null-assertion": error
   "@typescript-eslint/no-require-imports": error
   "@typescript-eslint/no-unnecessary-qualifier": error
   "@typescript-eslint/no-unnecessary-type-assertion": error
   "@typescript-eslint/no-unused-vars": error
   "@typescript-eslint/no-useless-constructor": error
   "@typescript-eslint/no-var-requires": error
-  "@typescript-eslint/prefer-for-of": warn
-  "@typescript-eslint/prefer-function-type": warn
+  "@typescript-eslint/prefer-for-of": error
+  "@typescript-eslint/prefer-function-type": error
   "@typescript-eslint/prefer-includes": error
+  "@typescript-eslint/prefer-readonly": error
   "@typescript-eslint/prefer-string-starts-ends-with": error
   "@typescript-eslint/promise-function-async": error
   "@typescript-eslint/require-array-sort-compare": error
   "@typescript-eslint/restrict-plus-operands": error
-  "@typescript-eslint/semi":
-    - error
-    - never
-  "@typescript-eslint/space-before-function-paren": "off"
+  "@stylistic/semi": error
+  "@typescript-eslint/space-before-function-paren": error
   "@typescript-eslint/type-annotation-spacing": error
   "@typescript-eslint/unbound-method": error
