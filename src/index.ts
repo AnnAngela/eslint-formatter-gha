@@ -9,7 +9,8 @@ const formatter: ESLint.Formatter["format"] = (results) => {
     }
     for (const {
         filePath, messages, usedDeprecatedRules,
-        // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+        // no-unused-vars,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         suppressedMessages, errorCount, fatalErrorCount, warningCount, fixableErrorCount, fixableWarningCount, output, source,
     } of results) {
         const baseAnnotationProperties = {
@@ -26,7 +27,8 @@ const formatter: ESLint.Formatter["format"] = (results) => {
         }
         for (const {
             message, severity, line, column, endLine, endColumn, ruleId, fix,
-            // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars, no-shadow
+            // no-unused-vars,
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             messageId, nodeType, fatal, source, suggestions,
         } of messages) {
             const msg = `${message} (${ruleId}) ${fix ? "[maybe fixable]" : ""} - https://eslint.org/docs/latest/rules/${ruleId}${isInGithubActions ? ` @ https://github.com/${process.env.GITHUB_REPOSITORY}/blob/${process.env.GITHUB_SHAs?.slice(0, 7)}/${path.relative(process.cwd(), filePath)}#L${line}${line !== endLine ? `-L${endLine}` : ""}` : ""}`;
