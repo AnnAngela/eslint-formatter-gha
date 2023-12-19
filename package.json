@@ -1,0 +1,45 @@
+{
+    "name": "@annangela/eslint-formatter-gha",
+    "version": "1.0.0",
+    "description": "A better ESLint formatter used in GitHub Actions",
+    "main": "./dist/index.js",
+    "exports": {
+        ".": "./dist/index.js"
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "lint": "eslint .",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "engines": {
+        "node": "^18.17 || ^20.9"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/AnnAngela/eslint-formatter-gha.git"
+    },
+    "keywords": [
+        "eslint",
+        "eslint-formatter",
+        "eslintformatter"
+    ],
+    "author": "AnnAngela",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/AnnAngela/eslint-formatter-gha/issues"
+    },
+    "homepage": "https://github.com/AnnAngela/eslint-formatter-gha#readme",
+    "dependencies": {
+        "@annangela/eslint-plugin-prefer-reflect": "^2.1.0",
+        "eslint": "^8.56.0",
+        "eslint-plugin-github": "^4.10.1",
+        "eslint-plugin-node": "^11.1.0",
+        "eslint-plugin-prefer-arrow-functions": "^3.2.4",
+        "typescript": "^5.3.3"
+    },
+    "devDependencies": {
+        "@stylistic/eslint-plugin": "^1.5.1"
+    }
+}
