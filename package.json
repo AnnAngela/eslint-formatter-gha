@@ -18,7 +18,7 @@
         "lint:eslint.config.flat": "eslint eslint.config.js",
         "__disabled:package:production": "esbuild src/index.ts --bundle --format=cjs --platform=node --legal-comments=inline --outdir=dist --out-extension:.js=.cjs --target=node18 --minify --tree-shaking=true --analyze --log-limit=0",
         "__disabled:package:development": "esbuild src/index.ts --bundle --format=cjs --platform=node --legal-comments=inline --outdir=dist --out-extension:.js=.cjs --target=node18 --tree-shaking=true --analyze=verbose --log-limit=0",
-        "package:production": "tsc --build --verbose && cp -v dist/index.js dist/index.cjs",
+        "package:production": "tsc --build --verbose && cp -v dist/index.js dist/index.cjs && rm -vf dist/index.js*",
         "package:development": "tsc --build --verbose && cp -v dist/index.js dist/index.cjs",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
