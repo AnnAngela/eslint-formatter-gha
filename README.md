@@ -18,7 +18,7 @@ npm install --save-dev @AnnAngela/eslint-formatter-gha
 
 ## Usage
 
-Add [`-f @AnnAngela/eslint-formatter-gha` or `--formatter @AnnAngela/eslint-formatter-gha`](https://eslint.org/docs/latest/use/command-line-interface#-f---format) to your eslint command, like this:
+Add [`-f @AnnAngela/eslint-formatter-gha` or `--format @AnnAngela/eslint-formatter-gha`](https://eslint.org/docs/latest/use/command-line-interface#-f---format) to your eslint command, like this:
 
 ```shell
 npx eslint -f @AnnAngela/eslint-formatter-gha src
