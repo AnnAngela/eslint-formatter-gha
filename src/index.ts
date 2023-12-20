@@ -1,31 +1,55 @@
 import path from "path";
-import type { ESLint } from "eslint";
-import { debug, notice, warning, error, summary } from "@actions/core";
-type deprecatedRulesSeverity = "debug" | "notice" | "warning" | "error";
+import fs from "fs";
+import type { ESLint, Linter } from "eslint";
+import type { notice } from "@actions/core";
+type logSeverity = "debug" | "notice" | "warning" | "error";
+
+const eslintSeverityToAnnotationSeverity: Record<Linter.Severity, logSeverity> = {
+    0: "notice",
+    1: "warning",
+    2: "error",
+};
 
 const generateESLintRuleLink = (ruleId: string) => `https://eslint.org/docs/latest/rules/${ruleId}`;
-const isInGithubActions = process.env.GITHUB_ACTIONS === "true";
+
+// Code from @actions/core/lib/command.js to prevent unnecessary dependencies from being included in dist file due to insufficient tree shaking functionality of esbuild
+const escapeProperty = (s: string | number) => `${s}`.replaceAll("%", "%25").replaceAll("\r", "%0D").replaceAll("\n", "%0A").replaceAll(":", "%3A").replaceAll(",", "%2C");
+const escapeData = (s: string | number) => `${s}`.replaceAll("%", "%25").replaceAll("\r", "%0D").replaceAll("\n", "%0A");
+const log = (severity: logSeverity, msg: string, annotationProperties?: Parameters<typeof notice>[1]) => {
+    if (severity === "debug") {
+        console.info(`::debug::${msg}`);
+        return;
+    }
+    console.info(`::${severity}${annotationProperties ? ` ${Object.entries(annotationProperties).map(([k, v]) => `${k}=${escapeProperty(v as string | number)}`).join(",")}` : ""}::${escapeData(msg)}`);
+};
+
+const writeSummary = (summary: string[]) => {
+    if (process.env.GITHUB_STEP_SUMMARY) {
+        fs.writeFileSync(process.env.GITHUB_STEP_SUMMARY, summary.join("\n"), { flag: "a" });
+    }
+};
+
 const formatter: ESLint.Formatter["format"] = (results) => {
-    summary.addHeading("ESLint Annotation", 1);
-    summary.addBreak();
-    summary.addRaw("ESLint Annotation from ").addLink("@annangela/eslint-formatter-gha", "https://www.npmjs.com/package/@annangela/eslint-formatter-gha");
-    summary.addBreak();
+    const summary = [
+        "",
+        "# ESLint Annotation", "",
+        "ESLint Annotation from [@annangela/eslint-formatter-gha](https://www.npmjs.com/package/@annangela/eslint-formatter-gha)", "",
+    ];
     const deprecatedRulesSeverityFromEnv = process.env.ESLINT_FORMATTER_GHA_DEPRECATED_RULES_SEVERITY?.toLowerCase();
     const deprecatedRulesSeverities = ["debug", "notice", "warning", "error"];
     // @TODO: Switch to `warning` when eslint 9 is released
-    let deprecatedRulesSeverity: deprecatedRulesSeverity = "debug";
+    let deprecatedRulesSeverity: logSeverity = "debug";
     if (deprecatedRulesSeverityFromEnv) {
         if (deprecatedRulesSeverities.includes(deprecatedRulesSeverityFromEnv)) {
-            deprecatedRulesSeverity = deprecatedRulesSeverityFromEnv as deprecatedRulesSeverity;
+            deprecatedRulesSeverity = deprecatedRulesSeverityFromEnv as logSeverity;
         } else {
-            summary.addRaw(`The env \`ESLINT_FORMATTER_GHA_DEPRECATED_RULES_SEVERITY\` it is not a valid severity - \`${deprecatedRulesSeverityFromEnv}\`, so the severity of deprecated rules report is set to \`${deprecatedRulesSeverity}\` instead.`);
-            summary.addBreak();
+            summary.push(`The env \`ESLINT_FORMATTER_GHA_DEPRECATED_RULES_SEVERITY\` it is not a valid severity - \`${deprecatedRulesSeverityFromEnv}\`, so the severity of deprecated rules report is set to \`${deprecatedRulesSeverity}\` instead.`, "");
         }
     }
     if (results.length === 0) {
         const message = "Nothing is broken, everything is fine.";
-        summary.addRaw(message);
-        summary.addBreak();
+        summary.push(message, "");
+        writeSummary(summary);
         return message;
     }
     const deprecatedRules: string[] = [];
@@ -43,28 +67,12 @@ const formatter: ESLint.Formatter["format"] = (results) => {
             deprecatedRules.push(ruleId);
             const deprecatedRuleMessage = `Deprecated rule: ${ruleId}${replacedBy.length > 0 ? `, replaced by ${replacedBy.join(" / ")} instead` : ""} - ${generateESLintRuleLink(ruleId)}`;
             if (deprecatedRulesSeverity === "debug") {
-                debug(deprecatedRuleMessage);
+                log("debug", deprecatedRuleMessage);
             } else {
                 deprecatedRulesSummary.push(`[${ruleId}](${generateESLintRuleLink(ruleId)})${replacedBy.length > 0 ? `: replaced by ${replacedBy.map((ruleId) => `[${ruleId}](${generateESLintRuleLink(ruleId)})`).join(" / ")} ` : ""}`);
-                switch (deprecatedRulesSeverity) {
-                    case "notice":
-                        notice(deprecatedRuleMessage, {
-                            title: "ESLint Annotation",
-                        });
-                        break;
-                    case "warning":
-                        warning(deprecatedRuleMessage, {
-                            title: "ESLint Annotation",
-                        });
-                        break;
-                    case "error":
-                        error(deprecatedRuleMessage, {
-                            title: "ESLint Annotation",
-                        });
-                        break;
-                    default:
-                        break;
-                }
+                log(deprecatedRulesSeverity, deprecatedRuleMessage, {
+                    title: "ESLint Annotation",
+                });
             }
         }
         for (const {
@@ -72,9 +80,10 @@ const formatter: ESLint.Formatter["format"] = (results) => {
             // // eslint-disable-next-line @typescript-eslint/no-unused-vars
             // messageId, nodeType, fatal, source, suggestions,
         } of messages) {
-            const fileName = path.relative(process.cwd(), filePath);
-            const msg = `${message} ${fix ? "[maybe fixable]" : ""} ${ruleId ? `(${ruleId}) - ${generateESLintRuleLink(ruleId)}` : ""}${isInGithubActions ? ` @ https://github.com/${process.env.GITHUB_REPOSITORY}/blob/${process.env.GITHUB_SHAs?.slice(0, 7)}/${path.relative(process.cwd(), filePath)}#L${line}${line !== endLine ? `-L${endLine}` : ""}` : ""}`;
-            annotationSummary.push(`${message} ${fix ? "[maybe fixable]" : ""} ${ruleId ? `([${ruleId}](${generateESLintRuleLink(ruleId)}))` : ""}${isInGithubActions ? ` @ [${fileName}](https://github.com/${process.env.GITHUB_REPOSITORY}/blob/${process.env.GITHUB_SHAs?.slice(0, 7)}/${fileName}#L${line}${line !== endLine ? `-L${endLine})` : ""}` : ""}`);
+            const fileName = `${path.relative(process.cwd(), filePath)}#L${line}${endLine && line !== endLine ? `-L${endLine}` : ""}`;
+            const fileLink = process.env.GITHUB_SHA ? `https://github.com/${process.env.GITHUB_REPOSITORY}/blob/${process.env.GITHUB_SHA.slice(0, 7)}/${encodeURI(fileName)}` : "";
+            const msg = `${message} ${fix ? "[maybe fixable]" : ""} ${ruleId ? `(${ruleId}) - ${generateESLintRuleLink(ruleId)}` : ""} @ ${process.env.GITHUB_SHA ? fileLink : fileName}`;
+            annotationSummary.push(`${message} ${fix ? "[maybe fixable]" : ""} ${ruleId ? `([${ruleId}](${generateESLintRuleLink(ruleId)}))` : ""} @ ${process.env.GITHUB_SHA ? `[${fileName}](${fileLink})` : fileName}`);
             const annotationProperties: NonNullable<Parameters<typeof notice>[1]> = {
                 title: "ESLint Annotation",
                 file: filePath,
@@ -83,34 +92,19 @@ const formatter: ESLint.Formatter["format"] = (results) => {
                 startColumn: column,
                 endColumn,
             };
-            debug(JSON.stringify({ msg, ...annotationProperties }, null, 4));
-            switch (severity) {
-                case 0:
-                    notice(msg, annotationProperties);
-                    break;
-                case 1:
-                    warning(msg, annotationProperties);
-                    break;
-                case 2:
-                    error(msg, annotationProperties);
-                    break;
-                default:
-                    break;
-            }
+            log("debug", JSON.stringify({ msg, ...annotationProperties }, null, 4));
+            log(eslintSeverityToAnnotationSeverity[severity], msg, annotationProperties);
         }
     }
     if (deprecatedRulesSummary.length > 0) {
-        summary.addHeading("Deprecated Rules", 2);
-        summary.addBreak();
-        summary.addList(deprecatedRulesSummary);
-        summary.addBreak();
+        summary.push("## Deprecated Rules", "");
+        summary.push(...deprecatedRulesSummary.map((line) => `* ${line}`), "");
     }
     if (annotationSummary.length > 0) {
-        summary.addHeading("Annotations", 2);
-        summary.addBreak();
-        summary.addList(annotationSummary);
-        summary.addBreak();
+        summary.push("## Annotations", "");
+        summary.push(...annotationSummary.map((line) => `* ${line}`), "");
     }
+    writeSummary(summary);
     return "";
 };
 export default formatter;
