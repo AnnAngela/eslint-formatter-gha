@@ -38,6 +38,6 @@ You can use these **environment variables** to configure the formatter:
 
 According to [the blog "Deprecation of formatting rules"](https://eslint.org/blog/2023/10/deprecating-formatting-rules/) and [the release note of ESLint v8.53](https://eslint.org/blog/2023/11/eslint-v8.53.0-released/), a batch of formatting rules have been marked as deprecated in documents.
 
-But in the cli, the deprecation of the rules is only visible after v9. So the default value of environment variable `ESLINT_FORMATTER_GHA_DEPRECATED_RULES_SEVERITY` will remain as `debug` until ESLint v9 is released.
+But in the cli, the deprecation of the rules is only visible after v9. So the default value of environment variable `ESLINT_FORMATTER_GHA_DEPRECATED_RULES_SEVERITY` will remain as `debug` until ESLint v9 is released, to prevent unexpected large amounts of log output.
 
 After that, the default value will be changed to `notice` with the v2 major release of this package.
