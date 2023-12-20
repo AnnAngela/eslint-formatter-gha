@@ -16,7 +16,7 @@
         "__disabled:lint:check-ci": "eslint --cache --cache-strategy content --cache-location .cache/ --exit-on-fatal-error --format @annangela/eslint-formatter-gha --max-warnings 0 ./src",
         "lint:write": "eslint --fix src",
         "lint:eslint.config.flat": "eslint eslint.config.js",
-        "package:production": "esbuild src/index.ts --bundle --format=cjs --platform=node --legal-comments=inline --outdir=dist --out-extension:.js=.cjs --target=node18--tree-shaking=true --log-limit=0 --footer:js=\";module.exports=module.exports.default;\" --minify --analyze",
+        "package:production": "esbuild src/index.ts --bundle --format=cjs --platform=node --legal-comments=inline --outdir=dist --out-extension:.js=.cjs --target=node18 --tree-shaking=true --log-limit=0 --footer:js=\";module.exports=module.exports.default;\" --minify --analyze",
         "package:development": "esbuild src/index.ts --bundle --format=cjs --platform=node --legal-comments=inline --outdir=dist --out-extension:.js=.cjs --target=node18 --tree-shaking=true --log-limit=0 --footer:js=\";module.exports=module.exports.default;\" --analyze=verbose",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
