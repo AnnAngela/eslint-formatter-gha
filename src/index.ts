@@ -80,7 +80,7 @@ const formatter: ESLint.Formatter["format"] = (results) => {
             // // eslint-disable-next-line @typescript-eslint/no-unused-vars
             // messageId, nodeType, fatal, source, suggestions,
         } of messages) {
-            const fileName = `${path.relative(process.cwd(), filePath)}#L${line}${endLine && line !== endLine ? `-L${endLine}` : ""}`;
+            const fileName = `${path.relative(process.cwd(), filePath)}#L${line}${endLine && line !== endLine && (endColumn ? endColumn !== 1 : true) ? `-L${endLine}` : ""}`;
             const fileLink = process.env.GITHUB_SHA ? `https://github.com/${process.env.GITHUB_REPOSITORY}/blob/${process.env.GITHUB_SHA.slice(0, 7)}/${encodeURI(fileName)}` : "";
             const msg = `${message} ${fix ? "[maybe fixable]" : ""} ${ruleId ? `(${ruleId}) - ${generateESLintRuleLink(ruleId)}` : ""} @ ${process.env.GITHUB_SHA ? fileLink : fileName}`;
             annotationSummary.push(`${message} ${fix ? "[maybe fixable]" : ""} ${ruleId ? `([${ruleId}](${generateESLintRuleLink(ruleId)}))` : ""} @ ${process.env.GITHUB_SHA ? `[${fileName}](${fileLink})` : fileName}`);
