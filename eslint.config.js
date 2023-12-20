@@ -191,6 +191,7 @@ export default [
             ...typescriptPlugin.configs["stylistic-type-checked"].rules,
             "i18n-text/no-en": "off",
             "prettier/prettier": "off",
+            "@stylistic/lines-between-class-members": "off",
         },
     },
 ];

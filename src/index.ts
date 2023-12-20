@@ -1,41 +1,19 @@
 import path from "path";
-import fs from "fs";
-import type { ESLint, Linter } from "eslint";
-import type { notice } from "@actions/core";
-type logSeverity = "debug" | "notice" | "warning" | "error";
-
-const eslintSeverityToAnnotationSeverity: Record<Linter.Severity, logSeverity> = {
-    0: "notice",
-    1: "warning",
-    2: "error",
-};
+import type { ESLint } from "eslint";
+// eslint-disable-next-line node/no-missing-import
+import ActionsSummary from "./ActionsSummary";
+// eslint-disable-next-line node/no-missing-import
+import { logSeverity, annotationPropertiesType, eslintSeverityToAnnotationSeverity, log } from "./command";
 
 const generateESLintRuleLink = (ruleId: string) => `https://eslint.org/docs/latest/rules/${ruleId}`;
 
-// Code from @actions/core/lib/command.js to prevent unnecessary dependencies from being included in dist file due to insufficient tree shaking functionality of esbuild
-const escapeProperty = (s: string | number) => `${s}`.replaceAll("%", "%25").replaceAll("\r", "%0D").replaceAll("\n", "%0A").replaceAll(":", "%3A").replaceAll(",", "%2C");
-const escapeData = (s: string | number) => `${s}`.replaceAll("%", "%25").replaceAll("\r", "%0D").replaceAll("\n", "%0A");
-const log = (severity: logSeverity, msg: string, annotationProperties?: Parameters<typeof notice>[1]) => {
-    if (severity === "debug") {
-        console.info(`::debug::${msg}`);
-        return;
-    }
-    console.info(`::${severity}${annotationProperties ? ` ${Object.entries(annotationProperties).map(([k, v]) => `${k}=${escapeProperty(v as string | number)}`).join(",")}` : ""}::${escapeData(msg)}`);
-};
-
-const writeSummary = (summary: string[]) => {
-    if (process.env.GITHUB_STEP_SUMMARY) {
-        fs.writeFileSync(process.env.GITHUB_STEP_SUMMARY, summary.join("\n"), { flag: "a" });
-    }
-};
+const actionsSummary = new ActionsSummary();
 
 const formatter: ESLint.Formatter["format"] = (results) => {
     console.info("results", results);
-    const summary = [
-        "",
-        "# ESLint Annotation", "",
-        "ESLint Annotation from [@annangela/eslint-formatter-gha](https://www.npmjs.com/package/@annangela/eslint-formatter-gha)", "",
-    ];
+    actionsSummary.addEOL();
+    actionsSummary.addHeading({ text: "ESLint Annotation", level: 1 });
+    actionsSummary.addRaw(`ESLint Annotation from ${actionsSummary.wrapLink({ text: "@annangela/eslint-formatter-gha", href: "https://www.npmjs.com/package/@annangela/eslint-formatter-gha" })}`);
     const deprecatedRulesSeverityFromEnv = process.env.ESLINT_FORMATTER_GHA_DEPRECATED_RULES_SEVERITY?.toLowerCase();
     const deprecatedRulesSeverities = ["debug", "notice", "warning", "error"];
     // @TODO: Switch to `warning` when eslint 9 is released
@@ -44,7 +22,7 @@ const formatter: ESLint.Formatter["format"] = (results) => {
         if (deprecatedRulesSeverities.includes(deprecatedRulesSeverityFromEnv)) {
             deprecatedRulesSeverity = deprecatedRulesSeverityFromEnv as logSeverity;
         } else {
-            summary.push(`The env \`ESLINT_FORMATTER_GHA_DEPRECATED_RULES_SEVERITY\` it is not a valid severity - \`${deprecatedRulesSeverityFromEnv}\`, so the severity of deprecated rules report is set to \`${deprecatedRulesSeverity}\` instead.`, "");
+            actionsSummary.addRaw(`The env \`ESLINT_FORMATTER_GHA_DEPRECATED_RULES_SEVERITY\` it is not a valid severity - \`${deprecatedRulesSeverityFromEnv}\`, so the severity of deprecated rules report is set to \`${deprecatedRulesSeverity}\` instead.`);
         }
     }
     const deprecatedRules: string[] = [];
@@ -79,7 +57,7 @@ const formatter: ESLint.Formatter["format"] = (results) => {
             const fileLink = process.env.GITHUB_SHA ? `https://github.com/${process.env.GITHUB_REPOSITORY}/blob/${process.env.GITHUB_SHA.slice(0, 7)}/${encodeURI(fileName)}` : "";
             const msg = `${message} ${fix ? "[maybe fixable]" : ""} ${ruleId ? `(${ruleId}) - ${generateESLintRuleLink(ruleId)}` : ""} @ ${process.env.GITHUB_SHA ? fileLink : fileName}`;
             annotationSummary.push(`${message} ${fix ? "[maybe fixable]" : ""} ${ruleId ? `([${ruleId}](${generateESLintRuleLink(ruleId)}))` : ""} @ ${process.env.GITHUB_SHA ? `[${fileName}](${fileLink})` : fileName}`);
-            const annotationProperties: NonNullable<Parameters<typeof notice>[1]> = {
+            const annotationProperties: annotationPropertiesType = {
                 title: "ESLint Annotation",
                 file: filePath,
                 startLine: line,
@@ -92,17 +70,17 @@ const formatter: ESLint.Formatter["format"] = (results) => {
         }
     }
     if (deprecatedRulesSummary.length + annotationSummary.length === 0) {
-        summary.push("Nothing is broken, everything is fine.", "");
+        actionsSummary.addRaw("Nothing is broken, everything is fine.");
     }
     if (deprecatedRulesSummary.length > 0) {
-        summary.push("## Deprecated Rules", "");
-        summary.push(...deprecatedRulesSummary.map((line) => `* ${line}`), "");
+        actionsSummary.addHeading({ text: "Deprecated Rules", level: 2 });
+        actionsSummary.addList({ items: deprecatedRulesSummary });
     }
     if (annotationSummary.length > 0) {
-        summary.push("## Annotations", "");
-        summary.push(...annotationSummary.map((line) => `* ${line}`), "");
+        actionsSummary.addHeading({ text: "Annotations", level: 2 });
+        actionsSummary.addList({ items: annotationSummary });
     }
-    writeSummary(summary);
+    actionsSummary.write();
     return "";
 };
 export default formatter;
