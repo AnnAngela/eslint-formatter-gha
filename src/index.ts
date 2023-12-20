@@ -30,6 +30,7 @@ const writeSummary = (summary: string[]) => {
 };
 
 const formatter: ESLint.Formatter["format"] = (results) => {
+    console.info("results", results);
     const summary = [
         "",
         "# ESLint Annotation", "",
@@ -45,12 +46,6 @@ const formatter: ESLint.Formatter["format"] = (results) => {
         } else {
             summary.push(`The env \`ESLINT_FORMATTER_GHA_DEPRECATED_RULES_SEVERITY\` it is not a valid severity - \`${deprecatedRulesSeverityFromEnv}\`, so the severity of deprecated rules report is set to \`${deprecatedRulesSeverity}\` instead.`, "");
         }
-    }
-    if (results.length === 0) {
-        const message = "Nothing is broken, everything is fine.";
-        summary.push(message, "");
-        writeSummary(summary);
-        return message;
     }
     const deprecatedRules: string[] = [];
     const deprecatedRulesSummary: string[] = [];
@@ -95,6 +90,9 @@ const formatter: ESLint.Formatter["format"] = (results) => {
             log("debug", JSON.stringify({ msg, ...annotationProperties }, null, 4));
             log(eslintSeverityToAnnotationSeverity[severity], msg, annotationProperties);
         }
+    }
+    if (deprecatedRulesSummary.length + annotationSummary.length === 0) {
+        summary.push("Nothing is broken, everything is fine.", "");
     }
     if (deprecatedRulesSummary.length > 0) {
         summary.push("## Deprecated Rules", "");
