@@ -1,6 +1,6 @@
 {
     "name": "@annangela/eslint-formatter-gha",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "A better ESLint formatter used in GitHub Actions",
     "main": "./dist/index.cjs",
     "exports": {
