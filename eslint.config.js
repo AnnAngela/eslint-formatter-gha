@@ -55,6 +55,7 @@ export default [
             ],
             ...stylisticPluginRules,
             "@stylistic/migrate/migrate": "error",
+            "@stylistic/brace-style": "error",
             "@annangela/prefer-reflect/prefer-reflect": "error",
             "prefer-arrow-functions/prefer-arrow-functions": [
                 "error",

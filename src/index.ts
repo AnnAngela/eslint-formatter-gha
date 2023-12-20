@@ -1,41 +1,83 @@
 import path from "path";
 import type { ESLint } from "eslint";
-import { debug, notice, warning, error } from "@actions/core";
+import { debug, notice, warning, error, summary } from "@actions/core";
+type deprecatedRulesSeverity = "debug" | "notice" | "warning" | "error";
+
+const generateESLintRuleLink = (ruleId: string) => `https://eslint.org/docs/latest/rules/${ruleId}`;
 const isInGithubActions = process.env.GITHUB_ACTIONS === "true";
-const deprecatedRules: string[] = [];
 const formatter: ESLint.Formatter["format"] = (results) => {
-    if (results.length === 0) {
-        return "Nothing is broken, everything is fine.";
+    summary.addHeading("ESLint Annotation", 1);
+    summary.addBreak();
+    summary.addRaw("ESLint Annotation from ").addLink("@annangela/eslint-formatter-gha", "https://www.npmjs.com/package/@annangela/eslint-formatter-gha");
+    summary.addBreak();
+    const deprecatedRulesSeverityFromEnv = process.env.ESLINT_FORMATTER_GHA_DEPRECATED_RULES_SEVERITY?.toLowerCase();
+    const deprecatedRulesSeverities = ["debug", "notice", "warning", "error"];
+    // @TODO: Switch to `warning` when eslint 9 is released
+    let deprecatedRulesSeverity: deprecatedRulesSeverity = "debug";
+    if (deprecatedRulesSeverityFromEnv) {
+        if (deprecatedRulesSeverities.includes(deprecatedRulesSeverityFromEnv)) {
+            deprecatedRulesSeverity = deprecatedRulesSeverityFromEnv as deprecatedRulesSeverity;
+        } else {
+            summary.addRaw(`The env \`ESLINT_FORMATTER_GHA_DEPRECATED_RULES_SEVERITY\` it is not a valid severity - \`${deprecatedRulesSeverityFromEnv}\`, so the severity of deprecated rules report is set to \`${deprecatedRulesSeverity}\` instead.`);
+            summary.addBreak();
+        }
     }
+    if (results.length === 0) {
+        const message = "Nothing is broken, everything is fine.";
+        summary.addRaw(message);
+        summary.addBreak();
+        return message;
+    }
+    const deprecatedRules: string[] = [];
+    const deprecatedRulesSummary: string[] = [];
+    const annotationSummary: string[] = [];
     for (const {
         filePath, messages, usedDeprecatedRules,
-        // no-unused-vars,
-        // @typescript-eslint/no-unused-vars eslint-disable-next-line
+        // // eslint-disable-next-line @typescript-eslint/no-unused-vars
         // suppressedMessages, errorCount, fatalErrorCount, warningCount, fixableErrorCount, fixableWarningCount, output, source,
     } of results) {
-        const baseAnnotationProperties = {
-            title: "ESLint Annotation",
-            file: filePath,
-        };
         for (const { ruleId, replacedBy } of usedDeprecatedRules) {
             if (deprecatedRules.includes(ruleId)) {
                 continue;
             }
             deprecatedRules.push(ruleId);
-            // @TODO: Switch to `warning` when eslint 9 is released, and use `baseAnnotationProperties` as second param
-            debug(`Deprecated rule: ${ruleId}. ${replacedBy.length > 0 ? `Please use ${replacedBy.join(" / ")} instead.` : ""} - https://eslint.org/docs/latest/rules/${ruleId}`);
+            const deprecatedRuleMessage = `Deprecated rule: ${ruleId}${replacedBy.length > 0 ? `, replaced by ${replacedBy.join(" / ")} instead` : ""} - ${generateESLintRuleLink(ruleId)}`;
+            if (deprecatedRulesSeverity === "debug") {
+                debug(deprecatedRuleMessage);
+            } else {
+                deprecatedRulesSummary.push(`[${ruleId}](${generateESLintRuleLink(ruleId)})${replacedBy.length > 0 ? `: replaced by ${replacedBy.map((ruleId) => `[${ruleId}](${generateESLintRuleLink(ruleId)})`).join(" / ")} ` : ""}`);
+                switch (deprecatedRulesSeverity) {
+                    case "notice":
+                        notice(deprecatedRuleMessage, {
+                            title: "ESLint Annotation",
+                        });
+                        break;
+                    case "warning":
+                        warning(deprecatedRuleMessage, {
+                            title: "ESLint Annotation",
+                        });
+                        break;
+                    case "error":
+                        error(deprecatedRuleMessage, {
+                            title: "ESLint Annotation",
+                        });
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
         for (const {
             message, severity, line, column, endLine, endColumn, ruleId, fix,
-            // @typescript-eslint/no-unused-vars eslint-disable-next-line
+            // // eslint-disable-next-line @typescript-eslint/no-unused-vars
             // messageId, nodeType, fatal, source, suggestions,
         } of messages) {
-            const msg = `${message} (${ruleId}) ${fix ? "[maybe fixable]" : ""} - https://eslint.org/docs/latest/rules/${ruleId}${isInGithubActions ? ` @ https://github.com/${process.env.GITHUB_REPOSITORY}/blob/${process.env.GITHUB_SHAs?.slice(0, 7)}/${path.relative(process.cwd(), filePath)}#L${line}${line !== endLine ? `-L${endLine}` : ""}` : ""}`;
-            /**
-             * @type {NonNullable<Parameters<notice>[1]>}
-             */
-            const annotationProperties = {
-                ...baseAnnotationProperties,
+            const fileName = path.relative(process.cwd(), filePath);
+            const msg = `${message} ${fix ? "[maybe fixable]" : ""} ${ruleId ? `(${ruleId}) - ${generateESLintRuleLink(ruleId)}` : ""}${isInGithubActions ? ` @ https://github.com/${process.env.GITHUB_REPOSITORY}/blob/${process.env.GITHUB_SHAs?.slice(0, 7)}/${path.relative(process.cwd(), filePath)}#L${line}${line !== endLine ? `-L${endLine}` : ""}` : ""}`;
+            annotationSummary.push(`${message} ${fix ? "[maybe fixable]" : ""} ${ruleId ? `([${ruleId}](${generateESLintRuleLink(ruleId)}))` : ""}${isInGithubActions ? ` @ [${fileName}](https://github.com/${process.env.GITHUB_REPOSITORY}/blob/${process.env.GITHUB_SHAs?.slice(0, 7)}/${fileName}#L${line}${line !== endLine ? `-L${endLine})` : ""}` : ""}`);
+            const annotationProperties: NonNullable<Parameters<typeof notice>[1]> = {
+                title: "ESLint Annotation",
+                file: filePath,
                 startLine: line,
                 endLine,
                 startColumn: column,
@@ -56,6 +98,18 @@ const formatter: ESLint.Formatter["format"] = (results) => {
                     break;
             }
         }
+    }
+    if (deprecatedRulesSummary.length > 0) {
+        summary.addHeading("Deprecated Rules", 2);
+        summary.addBreak();
+        summary.addList(deprecatedRulesSummary);
+        summary.addBreak();
+    }
+    if (annotationSummary.length > 0) {
+        summary.addHeading("Annotations", 2);
+        summary.addBreak();
+        summary.addList(annotationSummary);
+        summary.addBreak();
     }
     return "";
 };
