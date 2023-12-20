@@ -74,11 +74,6 @@ jobs:
           path: node_modules
           key: ${{ steps.version.outputs.hash }}
 
-      - name: Reload the linter cache
-        uses: actions/cache@v3
-        with:
-          path: .cache
-          key: cache@${{ github.ref }}
       - name: Check environment
         run: npx eslint --env-info
       - name: Run eslint
