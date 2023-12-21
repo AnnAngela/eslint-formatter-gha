@@ -4,7 +4,7 @@
         "lib": [
             "es2023", // Node 18 - https://github.com/tsconfig/bases#centralized-recommendations-for-tsconfig-bases
         ],
-        "module": "commonjs",
+        "module": "Node16", // Node 18 - https://github.com/tsconfig/bases#centralized-recommendations-for-tsconfig-bases
         "removeComments": true,
         "outDir": "dist/",
         "alwaysStrict": true,
@@ -18,6 +18,8 @@
         "forceConsistentCasingInFileNames": true,
         "skipLibCheck": true,
         "newLine": "lf",
+        "allowImportingTsExtensions": true,
+        "noEmit": true,
     },
     "include": [
         "src",

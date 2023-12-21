@@ -1,9 +1,7 @@
 import path from "path";
 import type { ESLint } from "eslint";
-// eslint-disable-next-line node/no-missing-import
-import ActionsSummary from "./ActionsSummary";
-// eslint-disable-next-line node/no-missing-import
-import { logSeverity, annotationPropertiesType, eslintSeverityToAnnotationSeverity, log } from "./command";
+import ActionsSummary from "./ActionsSummary.ts";
+import { logSeverity, annotationPropertiesType, eslintSeverityToAnnotationSeverity, log } from "./command.ts";
 
 const generateESLintRuleLink = (ruleId: string) => `https://eslint.org/docs/latest/rules/${ruleId}`;
 
