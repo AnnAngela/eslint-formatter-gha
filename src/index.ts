@@ -10,7 +10,6 @@ const generateESLintRuleLink = (ruleId: string) => `https://eslint.org/docs/late
 const actionsSummary = new ActionsSummary();
 
 const formatter: ESLint.Formatter["format"] = (results) => {
-    console.info("results", results);
     actionsSummary.addEOL();
     actionsSummary.addHeading({ text: "ESLint Annotation", level: 1 });
     actionsSummary.addRaw(`ESLint Annotation from ${actionsSummary.wrapLink({ text: "@annangela/eslint-formatter-gha", href: "https://www.npmjs.com/package/@annangela/eslint-formatter-gha" })}`);
