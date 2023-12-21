@@ -13,8 +13,11 @@ const { plugins: stylisticPlugin, rules: stylisticPluginRules } = stylistic.conf
     semi: true,
     jsx: false,
 });
-export default [
-    {
+/**
+ * @type { import("eslint").Linter.FlatConfig[] }
+ */
+const config = [
+    { // Default config
         ignores: [
             "dist/**/*",
             ".cache/**/*",
@@ -162,12 +165,12 @@ export default [
             camelcase: "error",
         },
     },
-    {
+    { // For this file
         files: [
             "eslint.config.js",
         ],
     },
-    {
+    { // For TypeScript files in src/
         files: [
             "src/**/*.ts",
         ],
@@ -195,3 +198,4 @@ export default [
         },
     },
 ];
+export default config;
