@@ -5,11 +5,13 @@ import { baseConfig, nodeConfig, typescriptConfig } from "@annangela/eslint-conf
 const config = [
     {
         ignores: [
-            "dist"
+            "dist",
         ],
     },
     { // Default config
         ...baseConfig,
+    },
+    { // Node.js config
         ...nodeConfig,
     },
     {
