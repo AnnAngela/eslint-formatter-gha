@@ -1,7 +1,7 @@
 import path from "path";
 import type { ESLint } from "eslint";
-import ActionsSummary from "./ActionsSummary.ts";
-import { logSeverity, annotationPropertiesType, eslintSeverityToAnnotationSeverity, log } from "./command.ts";
+import ActionsSummary from "./ActionsSummary.js";
+import { logSeverity, annotationPropertiesType, eslintSeverityToAnnotationSeverity, log } from "./command.js";
 
 const generateESLintRuleLink = (ruleId: string) => `https://eslint.org/docs/latest/rules/${ruleId}`;
 

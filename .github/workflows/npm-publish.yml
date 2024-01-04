@@ -28,7 +28,7 @@ jobs:
       - name: Run eslint
         run: npm run lint:check-ci
       - name: Build the package
-        run: npm run package:production
+        run: npm run package
       - name: Publish the package
         run: npm publish --access public
         env:
