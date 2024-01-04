@@ -1,32 +1,16 @@
 {
+    "extends": [
+        // "@annangela/eslint-config/tsconfig.json",
+        "./node_modules/@annangela/eslint-config/tsconfig.json"
+    ],
     "compilerOptions": {
-        "target": "ES2022", // Node 18 - https://github.com/tsconfig/bases#centralized-recommendations-for-tsconfig-bases
-        "lib": [
-            "es2023", // Node 18 - https://github.com/tsconfig/bases#centralized-recommendations-for-tsconfig-bases
-        ],
-        "module": "Node16", // Node 18 - https://github.com/tsconfig/bases#centralized-recommendations-for-tsconfig-bases
-        "removeComments": true,
         "outDir": "dist/",
-        "alwaysStrict": true,
-        "strict": true,
-        "downlevelIteration": true,
         "rootDir": "./src",
-        "baseUrl": "./",
-        "sourceMap": true,
-        "noImplicitAny": true,
-        "esModuleInterop": true,
-        "forceConsistentCasingInFileNames": true,
-        "skipLibCheck": true,
-        "newLine": "lf",
-        "allowImportingTsExtensions": true,
-        "noEmit": true,
+        "module": "commonjs",
+        "moduleResolution": "node",
     },
     "include": [
         "src",
-    ],
-    "exclude": [
-        "dist",
-        "node_modules",
     ],
     "$schema": "https://json.schemastore.org/tsconfig",
 }
