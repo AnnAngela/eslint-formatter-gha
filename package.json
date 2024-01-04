@@ -16,6 +16,7 @@
         "lint:write": "eslint --fix src",
         "lint:eslint.config.flat": "eslint eslint.config.js",
         "package": "node scripts/build.js",
+        "tag": "node scripts/newTag.js",
         "preversion": "eslint --exit-on-fatal-error --max-warnings 0 ./src",
         "version": "npm run package",
         "test": "echo \"Error: no test specified\" && exit 1"
