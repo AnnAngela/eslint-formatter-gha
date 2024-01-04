@@ -71,6 +71,13 @@ export interface ActionsSummaryQuoteOptions {
 export default class ActionsSummary {
     static readonly SUMMARY_ENV_VAR = "GITHUB_STEP_SUMMARY";
     static readonly INTEGER_REGEX = /^[1-9]\d*$/;
+    static readonly EMOJI = {
+        debug: ":information_source:",
+        notice: ":information_source:",
+        warning: ":warning:",
+        error: ":no_entry:",
+        fixable: ":wrench:",
+    };
     private summary: string[] = [];
     private _filePath?: string;
     private get filePath(): string {
@@ -98,9 +105,11 @@ export default class ActionsSummary {
     };
     write(options?: ActionsSummaryWriteOptions) {
         if (options?.overwrite) {
-            fs.writeFileSync(this.filePath, this.stringify());
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
+            fs.writeFileSync(this.filePath, this.stringify(), { flush: true });
         } else {
-            fs.appendFileSync(this.filePath, this.stringify());
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
+            fs.appendFileSync(this.filePath, this.stringify(), { flush: true });
         }
         return this.emptyBuffer();
     }

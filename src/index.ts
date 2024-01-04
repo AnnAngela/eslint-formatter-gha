@@ -19,7 +19,7 @@ const formatter: ESLint.Formatter["format"] = (results) => {
         if (deprecatedRulesSeverities.includes(deprecatedRulesSeverityFromEnv)) {
             deprecatedRulesSeverity = deprecatedRulesSeverityFromEnv as logSeverity;
         } else {
-            actionsSummary.addRaw(`The env \`ESLINT_FORMATTER_GHA_DEPRECATED_RULES_SEVERITY\` it is not a valid severity - \`${deprecatedRulesSeverityFromEnv}\`, so the severity of deprecated rules report is set to \`${deprecatedRulesSeverity}\` instead.`);
+            actionsSummary.addRaw(`${ActionsSummary.EMOJI.warning} The env \`ESLINT_FORMATTER_GHA_DEPRECATED_RULES_SEVERITY\` it is not a valid severity - \`${deprecatedRulesSeverityFromEnv}\`, so the severity of deprecated rules report is set to \`${deprecatedRulesSeverity}\` instead.`);
         }
     }
     const deprecatedRules: string[] = [];
@@ -27,8 +27,8 @@ const formatter: ESLint.Formatter["format"] = (results) => {
     const annotationSummary: string[] = [];
     for (const {
         filePath, messages, usedDeprecatedRules,
-        // // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        // suppressedMessages, errorCount, fatalErrorCount, warningCount, fixableErrorCount, fixableWarningCount, output, source,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        suppressedMessages, errorCount, fatalErrorCount, warningCount, fixableErrorCount, fixableWarningCount, output, source,
     } of results) {
         for (const { ruleId, replacedBy } of usedDeprecatedRules) {
             if (deprecatedRules.includes(ruleId)) {
@@ -47,13 +47,14 @@ const formatter: ESLint.Formatter["format"] = (results) => {
         }
         for (const {
             message, severity, line, column, endLine, endColumn, ruleId, fix,
-            // // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            // messageId, nodeType, fatal, source, suggestions,
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            messageId, nodeType, fatal, source, suggestions,
         } of messages) {
             const fileName = `${path.relative(process.cwd(), filePath)}#L${line}${endLine && line !== endLine && (endColumn ? endColumn !== 1 : true) ? `-L${endLine}` : ""}`;
             const fileLink = process.env.GITHUB_SHA ? `https://github.com/${process.env.GITHUB_REPOSITORY}/blob/${process.env.GITHUB_SHA.slice(0, 7)}/${encodeURI(fileName)}` : "";
             const msg = `${message} ${fix ? "[maybe fixable]" : ""} ${ruleId ? `(${ruleId}) - ${generateESLintRuleLink(ruleId)}` : ""} @ ${process.env.GITHUB_SHA ? fileLink : fileName}`;
-            annotationSummary.push(`${message} ${fix ? "[maybe fixable]" : ""} ${ruleId ? `([${ruleId}](${generateESLintRuleLink(ruleId)}))` : ""} @ ${process.env.GITHUB_SHA ? `[${fileName}](${fileLink})` : fileName}`);
+            // eslint-disable-next-line security/detect-object-injection
+            annotationSummary.push(`${ActionsSummary.EMOJI[eslintSeverityToAnnotationSeverity[severity]]} ${fix ? ActionsSummary.EMOJI.fixable : ""} ${message} ${ruleId ? `([${ruleId}](${generateESLintRuleLink(ruleId)}))` : ""} @ ${process.env.GITHUB_SHA ? `[${fileName}](${fileLink})` : fileName}`);
             const annotationProperties: annotationPropertiesType = {
                 title: "ESLint Annotation",
                 file: filePath,
@@ -63,6 +64,7 @@ const formatter: ESLint.Formatter["format"] = (results) => {
                 endColumn,
             };
             log("debug", JSON.stringify({ msg, ...annotationProperties }, null, 4));
+            // eslint-disable-next-line security/detect-object-injection
             log(eslintSeverityToAnnotationSeverity[severity], msg, annotationProperties);
         }
     }
@@ -70,7 +72,8 @@ const formatter: ESLint.Formatter["format"] = (results) => {
         actionsSummary.addRaw("Nothing is broken, everything is fine.");
     }
     if (deprecatedRulesSummary.length > 0) {
-        actionsSummary.addHeading({ text: "Deprecated Rules", level: 2 });
+        // eslint-disable-next-line security/detect-object-injection
+        actionsSummary.addHeading({ text: `${ActionsSummary.EMOJI[deprecatedRulesSeverity]} Deprecated Rules`, level: 2 });
         actionsSummary.addList({ items: deprecatedRulesSummary });
     }
     if (annotationSummary.length > 0) {
