@@ -12,7 +12,7 @@
     "type": "module",
     "scripts": {
         "lint:check": "eslint src",
-        "lint:check-ci": "eslint --exit-on-fatal-error -f ./node_modules/@annangela/eslint-formatter-gha/dist/index.cjs --max-warnings 0 ./src",
+        "lint:check-ci": "eslint --exit-on-fatal-error -f ./node_modules/@annangela/eslint-formatter-gha/dist/index.js --max-warnings 0 ./src",
         "lint:write": "eslint --fix src",
         "lint:eslint.config.flat": "eslint eslint.config.js",
         "package": "node scripts/build.js",

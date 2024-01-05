@@ -15,6 +15,9 @@ const config = [
         ...nodeConfig,
     },
     {
+        files: [
+            "src/**/*.ts",
+        ],
         rules: {
             "n/no-sync": "off",
         },
